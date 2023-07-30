@@ -29,11 +29,14 @@ public class Main {
         String nonce = Base64.getEncoder().encodeToString(secret.getBytes(StandardCharsets.UTF_8));
 
         String encryptedData = encrypt(TEXT_TO_BE_ENCRYPTED, secret, nonce);
-        decrypt("xQAM9rG4b+l/+hmzz16Bvch2Twn4EPpt7VjPiL2GIDwO4WZh67niR6dcfd+bggfDkOTlga5WpNrW3RCSbyXPaGPCznSuAnl2pPNb1stB3q5TFoJQPXnzvPESu83QX6zhP74h4KcjeRtRobdaEgJ1W/lRXj3u9qQLzNOooYAqMQGLpcNO98Q=", "N12GEgXJi4OE7WGAhWY1DmTPEhklafB5", "TjEyR0VnWEppNE9FN1dHQWhXWTFEbVRQRWhrbGFmQjU");
+        String decryptedString = decrypt(encryptedData,secret,nonce);
+        System.out.println("Decrypted String: "+decryptedString);
 }
-    public static void decrypt(String cipherText, String secret, String nonce) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static String decrypt(String cipherText, String secret, String nonce) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        System.out.println("Passphrase: "+secret);
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
 
+        System.out.println("Nonce/IV: "+nonce);
         byte[] nonceBytes = Base64.getDecoder().decode(nonce);
 
         Base64.Decoder decoder = Base64.getDecoder();
@@ -47,26 +50,25 @@ public class Main {
 
         byte[] plaintextBytes = cipher.doFinal(decodedCipherText);
         String plaintext = new String(plaintextBytes, StandardCharsets.UTF_8);
-        System.out.println("plain text is "+plaintext);
+        return plaintext;
     }
 
     public static String encrypt(String plainText, String secret, String nonce) {
         try {
             byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
 
-            byte[] nonceBytes = Base64.getDecoder().decode(nonce);
+            byte[] nonceBytes = java.util.Base64.getDecoder().decode(nonce);
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(TAG_LENGTH, nonceBytes);
-            System.out.println("iv from encrypt: " + Arrays.toString(gcmSpec.getIV()));
 
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
 
             byte[] plaintextBytes = plainText.getBytes(StandardCharsets.UTF_8);
             byte[] ciphertextBytes = cipher.doFinal(plaintextBytes);
 
-            System.out.println("ciphertext: " + Base64.getEncoder().encodeToString(ciphertextBytes));
+            System.out.println("Cipher Text: " + java.util.Base64.getEncoder().encodeToString(ciphertextBytes));
             return Base64.getEncoder().encodeToString(ciphertextBytes);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
